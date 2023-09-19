@@ -1,23 +1,50 @@
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function App() {
+  const [todos, setTodos] = useState([]);
+  const [title, setTitle] = useState('');
+
+  useEffect(() => {
+    fetch("http://localhost:3001/todos")
+      .then(response => response.json())
+      .then(data => setTodos(data));
+  }, []);
+
+  const handleAddTodo = () => {
+    fetch("http://localhost:3001/todos", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        todo: {
+          title: title
+        }
+      })
+    })
+      .then(response => response.json())
+      .then(data => setTodos(prevTodos => [...prevTodos, data]));
+
+    setTitle('');
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className="input">
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Todo title"
+        />
+        <button onClick={handleAddTodo}>Add Todo</button>
+      </div>
+      <ul>
+        {todos.map(todo => (
+          <li key={todo.id}>{todo.title}</li>
+        ))}
+      </ul>
     </div>
   );
 }
